@@ -30,7 +30,6 @@ class TaskNode {
 // Linked List untuk daftar tugas
 class TaskList {
     private TaskNode head;
-    private Stack<String> completedTasks = new Stack<>();
 
     public void addTask(String task) {
         TaskNode newNode = new TaskNode(task);
@@ -68,48 +67,12 @@ class TaskList {
         }
     }
 
-    public void updateTask(String oldTask, String newTask) {
-        TaskNode temp = head;
-        while (temp != null) {
-            if (temp.task.equals(oldTask)) {
-                temp.task = newTask;
-                System.out.println("✅ Task updated!");
-                return;
-            }
-            temp = temp.next;
-        }
-        System.out.println("⚠ Task not found.");
-    }
-
-    public void markTaskAsCompleted(String task) {
-        TaskNode temp = head;
-        while (temp != null) {
-            if (temp.task.equals(task)) {
-                completedTasks.push(task);
-                removeTask(task);
-                System.out.println("🎉 Task marked as completed!");
-                return;
-            }
-            temp = temp.next;
-        }
-        System.out.println("⚠ Task not found.");
-    }
-
-    public void undoCompletedTask() {
-        if (!completedTasks.isEmpty()) {
-            addTask(completedTasks.pop());
-            System.out.println("⏪ Task undone!");
-        } else {
-            System.out.println("⚠ No completed tasks to undo.");
-        }
-    }
-
     public void displayTasks() {
         if (head == null) {
             System.out.println("⚠ No tasks in the list.");
             return;
         }
-        System.out.println("📋 **Task List (Linked List)**");
+        System.out.println("📋 Task List 📋");
         TaskNode temp = head;
         int num = 1;
         while (temp != null) {
@@ -119,12 +82,11 @@ class TaskList {
     }
 }
 
-// Kelas utama
 public class DailyTaskManager {
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
         String[] tasks = new String[5];
-        Stack<String> completedTasksArray = new Stack<>();
+        boolean[] completed = new boolean[5];
         TaskList taskList = new TaskList();
 
         System.out.println("╔══════════════════════════════════════════════╗");
@@ -147,96 +109,108 @@ public class DailyTaskManager {
             }
 
             while (true) {
-                if (mainChoice == 1) { // Array Menu
+                if (mainChoice == 1) { // Array Task Manager
                     System.out.println("\n===== 📌 ARRAY TASK MENU 📌 =====");
                     System.out.println("1. View tasks");
-                    System.out.println("2. Add task");
-                    System.out.println("3. Update task");
-                    System.out.println("4. Mark task as complete");
-                    System.out.println("5. Undo completed task");
-                    System.out.println("6. Remove task");
-                    System.out.println("7. Return to Main Menu");
+                    System.out.println("1. Add new task");
+                    System.out.println("2. Update task");
+                    System.out.println("3. Complete task");
+                    System.out.println("4. Undo task complete");
+                    System.out.println("5. Back to main menu");
                     System.out.print("💡 Choose an option: ");
                     int arrayChoice = scanner.nextInt();
                     scanner.nextLine();
 
-                    if (arrayChoice == 7) break;
+                    if (arrayChoice == 5) break;
 
                     switch (arrayChoice) {
-                        case 1: // View all tasks
+                        case 1: // View tasks
                             System.out.println("📋 Task List:");
                             boolean hasTasks = false;
                             for (int i = 0; i < tasks.length; i++) {
                                 if (tasks[i] != null) {
-                                    System.out.println((i + 1) + ". " + tasks[i]);
+                                    String status = completed[i] ? "(Completed)" : "";
+                                    System.out.println((i + 1) + ". " + tasks[i] + " " + status);
                                     hasTasks = true;
                                 }
                             }
-                            if (!hasTasks) {
-                                System.out.println("⚠ No tasks available.");
-                            }
+                            if (!hasTasks) System.out.println("⚠ No tasks available.");
                             break;
 
                         case 2: // Add task
-                            System.out.print("➕ Enter new task: ");
-                            String newTask = scanner.nextLine();
                             boolean added = false;
                             for (int i = 0; i < tasks.length; i++) {
                                 if (tasks[i] == null) {
-                                    tasks[i] = newTask;
+                                    System.out.print("➕ Enter new task: ");
+                                    tasks[i] = scanner.nextLine();
                                     System.out.println("✅ Task added!");
                                     added = true;
                                     break;
                                 }
                             }
-                            if (!added) {
-                                System.out.println("⚠ Task list is full!");
-                            }
+                            if (!added) System.out.println("⚠ Task list is full (5 tasks max)!");
                             break;
 
                         case 3: // Update task
                             System.out.print("✏ Enter task number to update: ");
-                            int taskIndex = scanner.nextInt();
+                            int updateIndex = scanner.nextInt() - 1;
                             scanner.nextLine();
-                            if (taskIndex > 0 && taskIndex <= tasks.length && tasks[taskIndex - 1] != null) {
-                                System.out.print("📝 Enter new task: ");
-                                tasks[taskIndex - 1] = scanner.nextLine();
+                            if (updateIndex >= 0 && updateIndex < tasks.length && tasks[updateIndex] != null) {
+                                System.out.print("✏ Enter new task: ");
+                                tasks[updateIndex] = scanner.nextLine();
                                 System.out.println("✅ Task updated!");
                             } else {
                                 System.out.println("⚠ Invalid task number.");
                             }
                             break;
 
-                        case 4: // Mark task as completed
-                            System.out.print("✅ Enter task number to complete: ");
-                            int index = scanner.nextInt();
-                            scanner.nextLine();
-                            if (index > 0 && index <= tasks.length && tasks[index - 1] != null) {
-                                completedTasksArray.push(tasks[index - 1]);
-                                tasks[index - 1] = null;
-                                System.out.println("🎉 Task marked as completed!");
+                        case 4: // Complete task
+                            System.out.print("✔ Enter task number to complete: ");
+                            int completeIndex = scanner.nextInt() - 1;
+                            if (completeIndex >= 0 && completeIndex < tasks.length && tasks[completeIndex] != null) {
+                                completed[completeIndex] = true;
+                                System.out.println("✅ Task marked as complete!");
                             } else {
                                 System.out.println("⚠ Invalid task number.");
                             }
                             break;
 
-                        case 5: // Undo completed task
-                            if (!completedTasksArray.isEmpty()) {
-                                String undoneTask = completedTasksArray.pop();
-                                for (int i = 0; i < tasks.length; i++) {
-                                    if (tasks[i] == null) {
-                                        tasks[i] = undoneTask;
-                                        System.out.println("⏪ Task undone: " + undoneTask);
-                                        break;
-                                    }
-                                }
+                        case 5: // Undo complete
+                            System.out.print("⏪ Enter task number to undo complete: ");
+                            int undoIndex = scanner.nextInt() - 1;
+                            if (undoIndex >= 0 && undoIndex < tasks.length && completed[undoIndex]) {
+                                completed[undoIndex] = false;
+                                System.out.println("⏪ Task completion undone!");
                             } else {
-                                System.out.println("⚠ No completed tasks to undo.");
+                                System.out.println("⚠ Invalid task number.");
                             }
                             break;
                     }
-                } else if (mainChoice == 2) { // Linked List Menu
-                    taskList.displayTasks();
+                } else if (mainChoice == 2) { // Linked List Task Manager
+                    System.out.println("\n===== 📌 LINKED LIST TASK MENU 📌 =====");
+                    System.out.println("1. Add task");
+                    System.out.println("2. Remove task");
+                    System.out.println("3. View tasks");
+                    System.out.println("4. Back to main menu");
+                    System.out.print("💡 Choose an option: ");
+                    int linkedListChoice = scanner.nextInt();
+                    scanner.nextLine();
+
+                    if (linkedListChoice == 4) break;
+
+                    switch (linkedListChoice) {
+                        case 1:
+                            System.out.print("➕ Enter new task: ");
+                            taskList.addTask(scanner.nextLine());
+                            break;
+                        case 2:
+                            System.out.print("🗑 Enter task to remove: ");
+                            taskList.removeTask(scanner.nextLine());
+                            break;
+                        case 3:
+                            taskList.displayTasks();
+                            break;
+                    }
                 }
             }
         }
